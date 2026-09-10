@@ -1,0 +1,264 @@
+<?php
+
+session_start();
+
+if(!isset($_SESSION['siswa'])){
+
+    header("Location:index.php");
+    exit;
+
+}
+
+$nis = $_SESSION['siswa'];
+
+$file = "data/absensi.json";
+
+if(!file_exists($file)){
+    file_put_contents($file,"[]");
+}
+
+$absensi = json_decode(
+    file_get_contents($file),
+    true
+);
+
+$pesan = "";
+$tipe = "";
+
+if(isset($_POST['absen'])){
+
+    $tanggal = date("Y-m-d");
+
+    $sudah = false;
+
+    foreach($absensi as $a){
+
+        if(
+            $a['nis'] === $nis &&
+            $a['tanggal'] === $tanggal
+        ){
+
+            $sudah = true;
+            break;
+        }
+    }
+
+    if($sudah){
+
+        $pesan =
+        "Kamu sudah absen hari ini.";
+
+        $tipe = "error";
+
+    }else{
+
+        $absensi[] = [
+
+            "nis" => $nis,
+            "tanggal" => $tanggal,
+            "jam" => date("H:i:s"),
+            "status" => "Hadir",
+            "lokasi" =>
+            $_POST['lokasi'] ?? "Tidak tersedia"
+
+        ];
+
+        file_put_contents(
+            $file,
+            json_encode(
+                $absensi,
+                JSON_PRETTY_PRINT
+            )
+        );
+
+        $pesan =
+        "✅ Absensi berhasil dan sudah masuk ke Admin.";
+
+        $tipe = "success";
+    }
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>Absensi</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    font-family:Poppins,sans-serif;
+}
+
+body{
+    margin:0;
+    background:#f1f5f9;
+}
+
+.box{
+    max-width:500px;
+
+    margin:60px auto;
+
+    padding:30px;
+
+    background:white;
+
+    border-radius:25px;
+
+    text-align:center;
+
+    box-shadow:
+    0 15px 40px rgba(0,0,0,.08);
+}
+
+.clock{
+    font-size:42px;
+    font-weight:bold;
+    color:#2563eb;
+}
+
+button{
+    width:100%;
+
+    padding:15px;
+
+    border:0;
+
+    border-radius:12px;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-weight:bold;
+}
+
+.success,
+.error{
+    padding:12px;
+
+    border-radius:10px;
+
+    margin-bottom:20px;
+}
+
+.success{
+    background:#dcfce7;
+    color:#15803d;
+}
+
+.error{
+    background:#fee2e2;
+    color:#dc2626;
+}
+
+a{
+    display:block;
+    margin-top:15px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>📝 ABSENSI HARI INI</h2>
+
+<div
+class="clock"
+id="clock">
+00:00:00
+</div>
+
+<p>
+<?= date("d-m-Y") ?>
+</p>
+
+<?php if($pesan): ?>
+
+<div class="<?= $tipe ?>">
+<?= htmlspecialchars($pesan) ?>
+</div>
+
+<?php endif; ?>
+
+<form method="POST">
+
+<input
+type="hidden"
+name="lokasi"
+id="lokasi"
+value="Tidak tersedia"
+>
+
+<button name="absen">
+✅ ABSEN SEKARANG
+</button>
+
+</form>
+
+<a href="siswa.php">
+← Kembali
+</a>
+
+</div>
+
+<script>
+
+function jam(){
+
+    let d = new Date();
+
+    document.getElementById("clock")
+    .innerText =
+    d.toLocaleTimeString("id-ID");
+
+}
+
+setInterval(jam,1000);
+
+jam();
+
+if(navigator.geolocation){
+
+navigator.geolocation.getCurrentPosition(
+
+function(pos){
+
+document.getElementById("lokasi")
+.value =
+pos.coords.latitude +
+"," +
+pos.coords.longitude;
+
+},
+
+function(){
+
+document.getElementById("lokasi")
+.value =
+"GPS tidak tersedia";
+
+}
+
+);
+
+}
+
+</script>
+
+</body>
+</html>

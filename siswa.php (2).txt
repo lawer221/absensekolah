@@ -1,0 +1,222 @@
+<?php
+
+session_start();
+
+if(!isset($_SESSION['siswa'])){
+
+    header("Location:index.php");
+    exit;
+
+}
+
+$file = "data/siswa.json";
+
+$siswa = json_decode(
+    file_get_contents($file),
+    true
+);
+
+$data = null;
+
+foreach($siswa as $item){
+
+    if($item['nis'] === $_SESSION['siswa']){
+
+        $data = $item;
+        break;
+
+    }
+}
+
+if(!$data){
+
+    session_destroy();
+
+    header("Location:index.php");
+    exit;
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>Dashboard Siswa</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    font-family:Poppins,sans-serif;
+}
+
+body{
+    margin:0;
+    background:#f1f5f9;
+}
+
+.header{
+    background:#0f172a;
+    color:white;
+
+    padding:18px 25px;
+
+    display:flex;
+    justify-content:space-between;
+}
+
+.header a{
+    color:white;
+    text-decoration:none;
+}
+
+.container{
+    max-width:900px;
+    margin:30px auto;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:25px;
+
+    border-radius:20px;
+
+    margin-bottom:20px;
+
+    box-shadow:
+    0 10px 30px rgba(0,0,0,.06);
+}
+
+.hero{
+    background:
+    linear-gradient(
+        135deg,
+        #1e3a8a,
+        #2563eb
+    );
+
+    color:white;
+}
+
+.btn{
+    display:block;
+
+    padding:14px;
+    margin-top:12px;
+
+    border-radius:11px;
+
+    background:#2563eb;
+
+    color:white;
+    text-decoration:none;
+
+    text-align:center;
+}
+
+img{
+    width:100px;
+    height:100px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+<b>🎓 PORTAL SISWA</b>
+
+<a href="logout.php">
+Keluar
+</a>
+
+</div>
+
+<div class="container">
+
+<div class="card hero">
+
+<h2>
+Halo, <?= htmlspecialchars($data['nama']) ?> 👋
+</h2>
+
+<p>
+Selamat datang di portal absensi.
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>Profil Siswa</h3>
+
+<?php if($data['foto']): ?>
+
+<img src="uploads/<?= htmlspecialchars($data['foto']) ?>">
+
+<?php else: ?>
+
+<div style="
+font-size:60px;
+">
+👤
+</div>
+
+<?php endif; ?>
+
+<p>
+<b>Nama:</b>
+<?= htmlspecialchars($data['nama']) ?>
+</p>
+
+<p>
+<b>NIS:</b>
+<?= htmlspecialchars($data['nis']) ?>
+</p>
+
+<p>
+<b>Kelas:</b>
+<?= htmlspecialchars($data['kelas']) ?>
+</p>
+
+<a
+class="btn"
+href="profil.php">
+📸 Ganti Foto Profil
+</a>
+
+</div>
+
+<div class="card">
+
+<h3>Menu Absensi</h3>
+
+<a
+class="btn"
+href="absensi.php">
+
+📝 ABSEN SEKARANG
+
+</a>
+
+</div>
+
+</div>
+
+</body>
+</html>

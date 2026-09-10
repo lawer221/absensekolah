@@ -1,0 +1,216 @@
+<?php
+session_start();
+
+$file = "data/siswa.json";
+
+if(!is_dir("data")){
+    mkdir("data",0755,true);
+}
+
+if(!file_exists($file)){
+    file_put_contents($file,"[]");
+}
+
+$siswa = json_decode(
+    file_get_contents($file),
+    true
+);
+
+$error = "";
+
+if(isset($_POST['daftar'])){
+
+    $nis = trim($_POST['nis']);
+    $nama = trim($_POST['nama']);
+    $kelas = trim($_POST['kelas']);
+    $jk = trim($_POST['jk']);
+    $password = $_POST['password'];
+
+    foreach($siswa as $data){
+
+        if($data['nis'] === $nis){
+
+            $error = "NIS sudah terdaftar.";
+            break;
+        }
+    }
+
+    if($error === ""){
+
+        $siswa[] = [
+
+            "nis" => $nis,
+            "nama" => $nama,
+            "kelas" => $kelas,
+            "jk" => $jk,
+            "password" => $password,
+            "foto" => ""
+
+        ];
+
+        file_put_contents(
+            $file,
+            json_encode(
+                $siswa,
+                JSON_PRETTY_PRINT
+            )
+        );
+
+        header("Location:index.php");
+        exit;
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>Daftar Siswa</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    font-family:Poppins,sans-serif;
+}
+
+body{
+    margin:0;
+    background:#f1f5f9;
+}
+
+.box{
+    max-width:500px;
+    margin:40px auto;
+    background:white;
+
+    padding:30px;
+
+    border-radius:25px;
+
+    box-shadow:
+    0 15px 40px rgba(0,0,0,.08);
+}
+
+h2{
+    text-align:center;
+}
+
+input,
+select{
+    width:100%;
+    padding:13px;
+    margin:7px 0 13px;
+
+    border:1px solid #ddd;
+    border-radius:10px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+
+    border:0;
+    border-radius:10px;
+
+    background:#2563eb;
+    color:white;
+
+    font-weight:bold;
+}
+
+.error{
+    padding:12px;
+    background:#fee2e2;
+    color:#dc2626;
+
+    border-radius:10px;
+    margin-bottom:15px;
+}
+
+a{
+    display:block;
+    text-align:center;
+    margin-top:15px;
+
+    color:#2563eb;
+    text-decoration:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>🎓 DAFTAR AKUN SISWA</h2>
+
+<?php if($error): ?>
+
+<div class="error">
+<?= htmlspecialchars($error) ?>
+</div>
+
+<?php endif; ?>
+
+<form method="POST">
+
+<input
+name="nis"
+placeholder="NIS"
+required
+>
+
+<input
+name="nama"
+placeholder="Nama Lengkap"
+required
+>
+
+<input
+name="kelas"
+placeholder="Kelas"
+required
+>
+
+<select name="jk" required>
+
+<option value="">
+Jenis Kelamin
+</option>
+
+<option>Laki-laki</option>
+<option>Perempuan</option>
+
+</select>
+
+<input
+type="password"
+name="password"
+placeholder="Password"
+required
+>
+
+<button name="daftar">
+DAFTAR AKUN
+</button>
+
+</form>
+
+<a href="index.php">
+← Kembali Login
+</a>
+
+</div>
+
+</body>
+</html>
